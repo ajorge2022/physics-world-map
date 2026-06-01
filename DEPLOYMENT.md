@@ -7,6 +7,12 @@ Recommended free setup:
 - Database: Supabase Free plan
 - Optional GitHub Pages redirect: `ajorge2022.github.io`
 
+Current production URLs:
+
+- App: `https://physics-world-map.vercel.app`
+- GitHub Pages redirect: `https://ajorge2022.github.io`
+- Supabase project URL: `https://exmlmghqsitpwhgvowld.supabase.co`
+
 ## 1. Supabase
 
 Create a Supabase project, then run these files in SQL Editor:

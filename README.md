@@ -2,6 +2,12 @@
 
 Public city-level map for approved physicist profiles from a university network.
 
+## Live URLs
+
+- App: https://physics-world-map.vercel.app
+- GitHub Pages redirect: https://ajorge2022.github.io
+- Repository: https://github.com/ajorge2022/physics-world-map
+
 ## Stack
 
 - Next.js App Router
