@@ -25,6 +25,20 @@ type NominatimResult = {
   };
 };
 
+type OpenMeteoResult = {
+  name?: string;
+  latitude?: number;
+  longitude?: number;
+  country?: string;
+  country_code?: string;
+  admin1?: string;
+  admin2?: string;
+};
+
+type RestCountryResult = {
+  latlng?: [number, number];
+};
+
 const nominatimHeaders = {
   "Accept-Language": "es",
   "User-Agent": "UHPhysicsMap/0.1 admin-contact@example.edu"
@@ -46,6 +60,107 @@ function getCountryName(result: NominatimResult, fallbackCountry: string) {
   return result.address?.country ?? fallbackCountry;
 }
 
+async function fetchNominatim(url: URL) {
+  const response = await fetch(url, {
+    headers: nominatimHeaders,
+    next: { revalidate: 60 * 60 * 24 * 14 }
+  }).catch(() => null);
+
+  if (!response?.ok) {
+    return [];
+  }
+
+  return (await response.json()) as NominatimResult[];
+}
+
+function nominatimToSuggestions(results: NominatimResult[], country: string, fallbackCity: string): CitySuggestion[] {
+  return results.flatMap((result) => {
+    if (!result.lat || !result.lon) {
+      return [];
+    }
+
+    const cityName = getCityName(result);
+    const countryName = getCountryName(result, country);
+    const region = result.address?.state ?? result.address?.county;
+    const labelParts = [cityName, region, countryName].filter(Boolean);
+
+    return [
+      {
+        city: cityName || fallbackCity,
+        country: countryName,
+        label: labelParts.join(", ") || result.display_name || `${fallbackCity}, ${country}`,
+        latitude: Number(result.lat),
+        longitude: Number(result.lon)
+      }
+    ];
+  });
+}
+
+async function searchOpenMeteoCities(city: string, country: string, countryCode?: string, count = 6): Promise<CitySuggestion[]> {
+  const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
+  url.searchParams.set("name", city);
+  url.searchParams.set("count", String(count));
+  url.searchParams.set("language", "es");
+  url.searchParams.set("format", "json");
+
+  const response = await fetch(url, {
+    next: { revalidate: 60 * 60 * 24 * 14 }
+  }).catch(() => null);
+
+  if (!response?.ok) {
+    return [];
+  }
+
+  const payload = (await response.json()) as { results?: OpenMeteoResult[] };
+  const normalizedCountryCode = countryCode?.toUpperCase();
+
+  return (payload.results ?? [])
+    .filter((result) => !normalizedCountryCode || result.country_code?.toUpperCase() === normalizedCountryCode)
+    .flatMap((result) => {
+      if (typeof result.latitude !== "number" || typeof result.longitude !== "number") {
+        return [];
+      }
+
+      const cityName = result.name ?? city;
+      const countryName = result.country ?? country;
+      const labelParts = [cityName, result.admin1, result.admin2, countryName].filter(Boolean);
+
+      return [
+        {
+          city: cityName,
+          country: countryName,
+          label: labelParts.join(", "),
+          latitude: result.latitude,
+          longitude: result.longitude
+        }
+      ];
+    });
+}
+
+async function geocodeCountry(countryCode?: string): Promise<Coordinates | null> {
+  if (!countryCode) {
+    return null;
+  }
+
+  const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}?fields=latlng`, {
+    next: { revalidate: 60 * 60 * 24 * 30 }
+  }).catch(() => null);
+
+  if (!response?.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as RestCountryResult;
+  if (!payload.latlng || payload.latlng.length < 2) {
+    return null;
+  }
+
+  return {
+    latitude: payload.latlng[0],
+    longitude: payload.latlng[1]
+  };
+}
+
 export async function geocodeCityCountry(city: string | undefined, country: string, countryCode?: string): Promise<Coordinates | null> {
   const trimmedCity = city?.trim();
   const url = new URL("https://nominatim.openstreetmap.org/search");
@@ -57,25 +172,27 @@ export async function geocodeCityCountry(city: string | undefined, country: stri
   url.searchParams.set("limit", "1");
   url.searchParams.set("addressdetails", "0");
 
-  const response = await fetch(url, {
-    headers: nominatimHeaders,
-    next: { revalidate: 60 * 60 * 24 * 14 }
-  }).catch(() => null);
-
-  if (!response?.ok) {
-    return null;
-  }
-
-  const results = (await response.json()) as Array<{ lat?: string; lon?: string }>;
+  const results = await fetchNominatim(url);
   const match = results[0];
-  if (!match?.lat || !match.lon) {
-    return null;
+  if (match?.lat && match.lon) {
+    return {
+      latitude: Number(match.lat),
+      longitude: Number(match.lon)
+    };
   }
 
-  return {
-    latitude: Number(match.lat),
-    longitude: Number(match.lon)
-  };
+  if (trimmedCity) {
+    const fallbackCity = await searchOpenMeteoCities(trimmedCity, country, countryCode, 1);
+    const fallbackMatch = fallbackCity[0];
+    if (fallbackMatch) {
+      return {
+        latitude: fallbackMatch.latitude,
+        longitude: fallbackMatch.longitude
+      };
+    }
+  }
+
+  return geocodeCountry(countryCode);
 }
 
 export async function searchCitySuggestions(city: string, country: string, countryCode?: string): Promise<CitySuggestion[]> {
@@ -94,34 +211,10 @@ export async function searchCitySuggestions(city: string, country: string, count
   url.searchParams.set("dedupe", "1");
   url.searchParams.set("addressdetails", "1");
 
-  const response = await fetch(url, {
-    headers: nominatimHeaders,
-    next: { revalidate: 60 * 60 * 24 * 14 }
-  }).catch(() => null);
-
-  if (!response?.ok) {
-    return [];
+  const nominatimSuggestions = nominatimToSuggestions(await fetchNominatim(url), country, trimmedCity);
+  if (nominatimSuggestions.length > 0) {
+    return nominatimSuggestions;
   }
 
-  const results = (await response.json()) as NominatimResult[];
-  return results.flatMap((result) => {
-    if (!result.lat || !result.lon) {
-      return [];
-    }
-
-    const cityName = getCityName(result);
-    const countryName = getCountryName(result, country);
-    const region = result.address?.state ?? result.address?.county;
-    const labelParts = [cityName, region, countryName].filter(Boolean);
-
-    return [
-      {
-        city: cityName || trimmedCity,
-        country: countryName,
-        label: labelParts.join(", ") || result.display_name || `${trimmedCity}, ${country}`,
-        latitude: Number(result.lat),
-        longitude: Number(result.lon)
-      }
-    ];
-  });
+  return searchOpenMeteoCities(trimmedCity, country, countryCode);
 }
