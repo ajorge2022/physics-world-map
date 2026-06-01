@@ -35,6 +35,7 @@ export default function AddPage() {
           <label className="block">
             <span className="field-label">Contrasena compartida</span>
             <input className="input" type="password" value={accessPassword} onChange={(event) => setAccessPassword(event.target.value)} required />
+            <span className="mt-2 block text-xs text-stone-500">Pista: Profesor de Mec&#39;anica Cuant&#39;ica</span>
           </label>
           <button className="button-primary mt-4" type="submit">
             Abrir formulario

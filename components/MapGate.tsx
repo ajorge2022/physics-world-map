@@ -51,6 +51,7 @@ export function MapGate() {
             required
             autoFocus
           />
+          <span className="mt-2 block text-xs text-stone-500">Pista: Profesor de Mec&#39;anica Cuant&#39;ica</span>
         </label>
         <button className="button-primary mt-4" type="submit" disabled={loading}>
           {loading ? "Comprobando..." : "Ver mapa"}
