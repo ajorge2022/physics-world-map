@@ -28,7 +28,7 @@ const textFields = [
   ["name", "Nombre", true],
   ["university_origin", "Universidad de origen", false],
   ["current_institution", "Institucion actual", false],
-  ["position", "Cargo", false],
+  ["position", "Posición", false],
   ["research_field", "Campo de investigacion", false]
 ] as const;
 
