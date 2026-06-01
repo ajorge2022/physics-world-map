@@ -11,18 +11,18 @@ type Props = {
 };
 
 const fields = [
-  ["name", "Name", "text", true],
-  ["university_origin", "University origin / department", "text", false],
-  ["current_city", "Current city", "text", true],
-  ["country", "Country", "text", true],
-  ["current_institution", "Current institution", "text", false],
-  ["position", "Position", "text", false],
-  ["research_field", "Research field", "text", false],
+  ["name", "Nombre", "text", true],
+  ["university_origin", "Origen universitario / departamento", "text", false],
+  ["current_city", "Ciudad actual", "text", true],
+  ["country", "Pais", "text", true],
+  ["current_institution", "Institucion actual", "text", false],
+  ["position", "Cargo", "text", false],
+  ["research_field", "Campo de investigacion", "text", false],
   ["email", "Email", "email", false],
-  ["website", "Website", "url", false],
+  ["website", "Sitio web", "url", false],
   ["orcid", "ORCID", "text", false],
   ["linkedin", "LinkedIn", "url", false],
-  ["year_left_university", "Year left university", "number", false]
+  ["year_left_university", "Ano en que salio de la universidad", "number", false]
 ] as const;
 
 export function ProfileForm({ mode, initialProfile, editCode, accessPassword }: Props) {
@@ -57,21 +57,21 @@ export function ProfileForm({ mode, initialProfile, editCode, accessPassword }: 
 
     if (result.needsManualCoordinates) {
       setManualCoordinates(true);
-      setMessage("Geocoding failed. Add city-level latitude and longitude and submit again.");
+      setMessage("No se pudo geocodificar. Agrega latitud y longitud a nivel de ciudad y envia de nuevo.");
       return;
     }
 
     if (!response.ok) {
-      setMessage(typeof result.error === "string" ? result.error : "Please check the form and try again.");
+      setMessage(typeof result.error === "string" ? result.error : "Revisa el formulario e intentalo de nuevo.");
       return;
     }
 
     if (mode === "create") {
       setShownEditCode(result.editCode);
-      setMessage("Profile submitted for admin approval.");
+      setMessage("Perfil enviado para aprobacion administrativa.");
       event.currentTarget.reset();
     } else {
-      setMessage("Profile updated. It will be reviewed again before appearing publicly.");
+      setMessage("Perfil actualizado. Sera revisado de nuevo antes de aparecer publicamente.");
     }
   }
 
@@ -95,11 +95,11 @@ export function ProfileForm({ mode, initialProfile, editCode, accessPassword }: 
       {manualCoordinates && (
         <div className="grid gap-4 rounded-md bg-stone-50 p-4 sm:grid-cols-2">
           <label className="block">
-            <span className="field-label">Latitude</span>
+            <span className="field-label">Latitud</span>
             <input className="input" name="latitude" type="number" step="any" required defaultValue={initialProfile?.latitude ?? ""} />
           </label>
           <label className="block">
-            <span className="field-label">Longitude</span>
+            <span className="field-label">Longitud</span>
             <input className="input" name="longitude" type="number" step="any" required defaultValue={initialProfile?.longitude ?? ""} />
           </label>
         </div>
@@ -108,32 +108,33 @@ export function ProfileForm({ mode, initialProfile, editCode, accessPassword }: 
       <div className="space-y-3">
         <label className="flex gap-3 text-sm text-stone-700">
           <input name="show_email" type="checkbox" defaultChecked={initialProfile?.show_email ?? false} className="mt-1" />
-          Display my email publicly on the map popup.
+          Mostrar mi email publicamente en el popup del mapa.
         </label>
         {mode === "edit" && (
           <label className="flex gap-3 text-sm text-stone-700">
             <input name="is_public" type="checkbox" defaultChecked={initialProfile?.is_public ?? true} className="mt-1" />
-            Keep my profile visible once approved.
+            Mantener mi perfil visible cuando sea aprobado.
           </label>
         )}
         <label className="flex gap-3 text-sm text-stone-700">
-          <input name="consent_given" type="checkbox" required defaultChecked={initialProfile?.consent_given ?? false} className="mt-1" />I consent to storing and displaying city-level profile information according to the Privacy Policy.
+          <input name="consent_given" type="checkbox" required defaultChecked={initialProfile?.consent_given ?? false} className="mt-1" />
+          Doy mi consentimiento para guardar y mostrar informacion de perfil a nivel de ciudad segun la Politica de Privacidad.
         </label>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <button className="button-primary" type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : mode === "create" ? "Submit profile" : "Save changes"}
+          {submitting ? "Guardando..." : mode === "create" ? "Enviar perfil" : "Guardar cambios"}
         </button>
         <button className="button-secondary" type="button" onClick={() => setManualCoordinates(true)}>
-          Enter coordinates manually
+          Ingresar coordenadas manualmente
         </button>
       </div>
 
       {message && <p className="text-sm font-medium text-stone-700">{message}</p>}
       {shownEditCode && (
         <div className="rounded-md border border-copper/30 bg-copper/10 p-4">
-          <p className="text-sm font-semibold text-ink">Your edit code is shown once. Store it privately.</p>
+          <p className="text-sm font-semibold text-ink">Tu codigo de edicion se muestra una sola vez. Guardalo en privado.</p>
           <code className="mt-2 block break-all rounded bg-white px-3 py-2 text-sm">{shownEditCode}</code>
         </div>
       )}

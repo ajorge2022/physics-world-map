@@ -1,4 +1,4 @@
-# Physics World Map
+# UH Physics Map
 
 Public city-level map for approved physicist profiles from a university network.
 

@@ -21,7 +21,7 @@ export default function AdminPage() {
     const result = await response.json();
     setLoading(false);
     if (!response.ok) {
-      setMessage(result.error ?? "Could not load pending profiles.");
+      setMessage(result.error ?? "No se pudieron cargar los perfiles pendientes.");
       return;
     }
     setProfiles(result.profiles ?? []);
@@ -36,7 +36,7 @@ export default function AdminPage() {
     });
     setLoading(false);
     if (!response.ok) {
-      setMessage("Admin action failed.");
+      setMessage("La accion administrativa fallo.");
       return;
     }
     setProfiles((current) => current.filter((profile) => profile.id !== id));
@@ -49,31 +49,31 @@ export default function AdminPage() {
       body: JSON.stringify({ admin_password: adminPassword })
     });
     if (!response.ok) {
-      setMessage("CSV export failed.");
+      setMessage("La exportacion CSV fallo.");
       return;
     }
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "physics-world-map-approved.csv";
+    link.download = "uh-physics-map-aprobados.csv";
     link.click();
     URL.revokeObjectURL(url);
   }
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
-      <h1 className="text-3xl font-semibold text-ink">Admin</h1>
+      <h1 className="text-3xl font-semibold text-ink">Administracion</h1>
       <form onSubmit={loadPending} className="mt-6 flex max-w-xl flex-col gap-3 rounded-md border border-stone-200 bg-white p-5 shadow-sm sm:flex-row sm:items-end">
         <label className="block flex-1">
-          <span className="field-label">Admin password</span>
+          <span className="field-label">Contrasena de administrador</span>
           <input className="input" type="password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} required />
         </label>
         <button className="button-primary" type="submit" disabled={loading}>
-          Load pending
+          Cargar pendientes
         </button>
         <button className="button-secondary" type="button" onClick={exportCsv} disabled={!adminPassword}>
-          Export CSV
+          Exportar CSV
         </button>
       </form>
 
@@ -86,16 +86,16 @@ export default function AdminPage() {
               <div>
                 <h2 className="text-lg font-semibold text-ink">{profile.name}</h2>
                 <p className="text-sm text-stone-700">
-                  {profile.current_city}, {profile.country} · {profile.current_institution || "No institution"} · {profile.position || "No position"}
+                  {profile.current_city}, {profile.country} · {profile.current_institution || "Sin institucion"} · {profile.position || "Sin cargo"}
                 </p>
-                <p className="mt-2 text-sm text-stone-700">{profile.research_field || "No research field"}</p>
+                <p className="mt-2 text-sm text-stone-700">{profile.research_field || "Sin campo de investigacion"}</p>
                 {profile.email && <p className="mt-2 text-sm text-stone-600">{profile.email}</p>}
               </div>
               <div className="flex flex-wrap gap-2">
-                <button className="button-primary" type="button" onClick={() => act(profile.id, "approve")}>Approve</button>
-                <button className="button-secondary" type="button" onClick={() => act(profile.id, "reject")}>Reject</button>
-                <button className="button-secondary" type="button" onClick={() => act(profile.id, "hide")}>Hide</button>
-                <button className="button-danger" type="button" onClick={() => act(profile.id, "delete")}>Delete</button>
+                <button className="button-primary" type="button" onClick={() => act(profile.id, "approve")}>Aprobar</button>
+                <button className="button-secondary" type="button" onClick={() => act(profile.id, "reject")}>Rechazar</button>
+                <button className="button-secondary" type="button" onClick={() => act(profile.id, "hide")}>Ocultar</button>
+                <button className="button-danger" type="button" onClick={() => act(profile.id, "delete")}>Eliminar</button>
               </div>
             </div>
           </article>

@@ -17,9 +17,10 @@ function unique(values: Array<string | null>) {
   return Array.from(new Set(values.filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b));
 }
 
-export default function MapClient() {
+export default function MapClient({ accessPassword }: { accessPassword: string }) {
   const [profiles, setProfiles] = useState<PublicPhysicist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [filters, setFilters] = useState({
     country: "",
     research_field: "",
@@ -28,11 +29,23 @@ export default function MapClient() {
   });
 
   useEffect(() => {
-    fetch("/api/profiles")
-      .then((response) => response.json())
-      .then((payload) => setProfiles(payload.profiles ?? []))
+    setLoading(true);
+    setError("");
+    fetch("/api/profiles", {
+      headers: {
+        "x-physics-map-access-password": accessPassword
+      }
+    })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error ?? "No se pudo cargar el mapa.");
+        }
+        setProfiles(payload.profiles ?? []);
+      })
+      .catch((fetchError: Error) => setError(fetchError.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [accessPassword]);
 
   const options = useMemo(
     () => ({
@@ -57,29 +70,31 @@ export default function MapClient() {
     <section className="grid gap-4 lg:grid-cols-[280px_1fr]">
       <aside className="rounded-md border border-stone-200 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-ink">Filters</h2>
+          <h2 className="text-base font-semibold text-ink">Filtros</h2>
           <button
             className="text-sm font-medium text-marine hover:underline"
             onClick={() => setFilters({ country: "", research_field: "", position: "", current_institution: "" })}
             type="button"
           >
-            Reset
+            Reiniciar
           </button>
         </div>
         <div className="mt-4 space-y-4">
-          <FilterSelect label="Country" value={filters.country} values={options.countries} onChange={(country) => setFilters((current) => ({ ...current, country }))} />
-          <FilterSelect label="Research field" value={filters.research_field} values={options.fields} onChange={(research_field) => setFilters((current) => ({ ...current, research_field }))} />
-          <FilterSelect label="Position" value={filters.position} values={options.positions} onChange={(position) => setFilters((current) => ({ ...current, position }))} />
-          <FilterSelect label="Institution" value={filters.current_institution} values={options.institutions} onChange={(current_institution) => setFilters((current) => ({ ...current, current_institution }))} />
+          <FilterSelect label="Pais" value={filters.country} values={options.countries} onChange={(country) => setFilters((current) => ({ ...current, country }))} />
+          <FilterSelect label="Campo de investigacion" value={filters.research_field} values={options.fields} onChange={(research_field) => setFilters((current) => ({ ...current, research_field }))} />
+          <FilterSelect label="Cargo" value={filters.position} values={options.positions} onChange={(position) => setFilters((current) => ({ ...current, position }))} />
+          <FilterSelect label="Institucion" value={filters.current_institution} values={options.institutions} onChange={(current_institution) => setFilters((current) => ({ ...current, current_institution }))} />
         </div>
         <p className="mt-5 text-sm text-stone-600">
-          Showing {visibleProfiles.length} of {profiles.length} approved public profiles.
+          Mostrando {visibleProfiles.length} de {profiles.length} perfiles publicos aprobados.
         </p>
       </aside>
 
       <div className="h-[72vh] min-h-[520px] overflow-hidden rounded-md border border-stone-200 bg-white shadow-sm">
         {loading ? (
-          <div className="flex h-full items-center justify-center text-sm text-stone-600">Loading map data...</div>
+          <div className="flex h-full items-center justify-center text-sm text-stone-600">Cargando datos del mapa...</div>
+        ) : error ? (
+          <div className="flex h-full items-center justify-center px-6 text-center text-sm text-stone-700">{error}</div>
         ) : (
           <MapContainer center={[30, 0]} zoom={2} minZoom={2} scrollWheelZoom className="z-0">
             <TileLayer
@@ -100,7 +115,7 @@ export default function MapClient() {
                     <div className="pt-2 text-marine">
                       {profile.website && (
                         <a className="block hover:underline" href={profile.website} target="_blank" rel="noreferrer">
-                          Website
+                          Sitio web
                         </a>
                       )}
                       {profile.orcid && (
@@ -141,7 +156,7 @@ function FilterSelect({
     <label className="block">
       <span className="field-label">{label}</span>
       <select className="input" value={value} onChange={(event) => onChange(event.target.value)}>
-        <option value="">All</option>
+        <option value="">Todos</option>
         {values.map((item) => (
           <option key={item} value={item}>
             {item}

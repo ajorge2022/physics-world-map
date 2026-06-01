@@ -7,7 +7,7 @@ import { editLookupSchema } from "@/lib/validation";
 
 export async function POST(request: Request) {
   if (!rateLimit(`verify:${getClientKey(request)}`, 12, 10 * 60_000)) {
-    return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
+    return NextResponse.json({ error: "Demasiados intentos. Intentalo de nuevo mas tarde." }, { status: 429 });
   }
 
   const body = await request.json();
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ error: "No matching profile or edit code." }, { status: 401 });
+    return NextResponse.json({ error: "No se encontro un perfil con ese codigo de edicion." }, { status: 401 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -61,5 +61,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ error: "No matching profile or edit code." }, { status: 401 });
+  return NextResponse.json({ error: "No se encontro un perfil con ese codigo de edicion." }, { status: 401 });
 }

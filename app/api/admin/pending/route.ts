@@ -6,7 +6,7 @@ import { requireAdminPassword } from "@/lib/security";
 export async function POST(request: Request) {
   const body = await request.json();
   if (!requireAdminPassword(body.admin_password)) {
-    return NextResponse.json({ error: "Invalid admin password." }, { status: 401 });
+    return NextResponse.json({ error: "Contrasena de administrador incorrecta." }, { status: 401 });
   }
 
   if (!hasSupabaseConfig()) {

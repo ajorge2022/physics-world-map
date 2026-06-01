@@ -14,7 +14,7 @@ function escapeCsv(value: unknown) {
 export async function POST(request: Request) {
   const body = await request.json();
   if (!requireAdminPassword(body.admin_password)) {
-    return NextResponse.json({ error: "Invalid admin password." }, { status: 401 });
+    return NextResponse.json({ error: "Contrasena de administrador incorrecta." }, { status: 401 });
   }
 
   if (!hasSupabaseConfig()) {
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     return new NextResponse(csv, {
       headers: {
         "content-type": "text/csv; charset=utf-8",
-        "content-disposition": 'attachment; filename="physics-world-map-approved.csv"'
+        "content-disposition": 'attachment; filename="uh-physics-map-aprobados.csv"'
       }
     });
   }
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   return new NextResponse(csv, {
     headers: {
       "content-type": "text/csv; charset=utf-8",
-      "content-disposition": 'attachment; filename="physics-world-map-approved.csv"'
+      "content-disposition": 'attachment; filename="uh-physics-map-aprobados.csv"'
     }
   });
 }

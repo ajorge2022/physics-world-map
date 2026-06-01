@@ -9,7 +9,16 @@ import { profileInputSchema, updateProfileSchema } from "@/lib/validation";
 const publicColumns =
   "id,name,university_origin,current_city,country,current_institution,position,research_field,email,show_email,website,orcid,linkedin,year_left_university,latitude,longitude";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const accessPassword =
+    request.headers.get("x-physics-map-access-password") ??
+    new URL(request.url).searchParams.get("access_password") ??
+    undefined;
+
+  if (!requireAccessPassword(accessPassword)) {
+    return NextResponse.json({ error: "Contrasena incorrecta." }, { status: 401 });
+  }
+
   if (!hasSupabaseConfig()) {
     const localProfiles = await listLocalProfiles();
     const profiles = localProfiles
@@ -45,12 +54,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   if (!rateLimit(`create:${getClientKey(request)}`, 6, 10 * 60_000)) {
-    return NextResponse.json({ error: "Too many submissions. Try again later." }, { status: 429 });
+    return NextResponse.json({ error: "Demasiados envios. Intentalo de nuevo mas tarde." }, { status: 429 });
   }
 
   const body = await request.json();
   if (!requireAccessPassword(body.access_password)) {
-    return NextResponse.json({ error: "Invalid access password." }, { status: 401 });
+    return NextResponse.json({ error: "Contrasena incorrecta." }, { status: 401 });
   }
 
   const parsed = profileInputSchema.safeParse(body);
@@ -65,7 +74,7 @@ export async function POST(request: Request) {
     const coordinates = await geocodeCityCountry(parsed.data.current_city, parsed.data.country);
     if (!coordinates) {
       return NextResponse.json(
-        { error: "Geocoding failed. Please enter city-level latitude and longitude.", needsManualCoordinates: true },
+        { error: "No se pudo geocodificar. Ingresa latitud y longitud a nivel de ciudad.", needsManualCoordinates: true },
         { status: 422 }
       );
     }
@@ -124,7 +133,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   if (!rateLimit(`edit:${getClientKey(request)}`, 20, 10 * 60_000)) {
-    return NextResponse.json({ error: "Too many edit attempts. Try again later." }, { status: 429 });
+    return NextResponse.json({ error: "Demasiados intentos de edicion. Intentalo de nuevo mas tarde." }, { status: 429 });
   }
 
   const body = await request.json();
@@ -138,12 +147,12 @@ export async function PUT(request: Request) {
     const existing = profiles.find((profile) => profile.id === parsed.data.id);
 
     if (!existing) {
-      return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+      return NextResponse.json({ error: "Perfil no encontrado." }, { status: 404 });
     }
 
     const isValid = await verifyEditCode(parsed.data.edit_code, existing.edit_code_hash);
     if (!isValid) {
-      return NextResponse.json({ error: "Invalid edit code." }, { status: 401 });
+      return NextResponse.json({ error: "Codigo de edicion incorrecto." }, { status: 401 });
     }
 
     const { id, edit_code: _editCode, ...update } = parsed.data;
@@ -160,12 +169,12 @@ export async function PUT(request: Request) {
     .single();
 
   if (fetchError || !existing) {
-    return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+    return NextResponse.json({ error: "Perfil no encontrado." }, { status: 404 });
   }
 
   const isValid = await verifyEditCode(parsed.data.edit_code, existing.edit_code_hash);
   if (!isValid) {
-    return NextResponse.json({ error: "Invalid edit code." }, { status: 401 });
+    return NextResponse.json({ error: "Codigo de edicion incorrecto." }, { status: 401 });
   }
 
   const { id, edit_code: _editCode, ...update } = parsed.data;
@@ -191,12 +200,12 @@ export async function DELETE(request: Request) {
     const existing = profiles.find((profile) => profile.id === id);
 
     if (!existing) {
-      return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+      return NextResponse.json({ error: "Perfil no encontrado." }, { status: 404 });
     }
 
     const isValid = await verifyEditCode(editCode, existing.edit_code_hash);
     if (!isValid) {
-      return NextResponse.json({ error: "Invalid edit code." }, { status: 401 });
+      return NextResponse.json({ error: "Codigo de edicion incorrecto." }, { status: 401 });
     }
 
     await updateLocalProfile(id, { is_public: false });
@@ -212,12 +221,12 @@ export async function DELETE(request: Request) {
     .single();
 
   if (fetchError || !existing) {
-    return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+    return NextResponse.json({ error: "Perfil no encontrado." }, { status: 404 });
   }
 
   const isValid = await verifyEditCode(editCode, existing.edit_code_hash);
   if (!isValid) {
-    return NextResponse.json({ error: "Invalid edit code." }, { status: 401 });
+    return NextResponse.json({ error: "Codigo de edicion incorrecto." }, { status: 401 });
   }
 
   const { error } = await supabase

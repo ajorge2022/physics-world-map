@@ -12,7 +12,7 @@ export async function PATCH(request: Request) {
   }
 
   if (!requireAdminPassword(parsed.data.admin_password)) {
-    return NextResponse.json({ error: "Invalid admin password." }, { status: 401 });
+    return NextResponse.json({ error: "Contrasena de administrador incorrecta." }, { status: 401 });
   }
 
   const { id, action } = parsed.data;

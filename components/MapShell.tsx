@@ -2,11 +2,11 @@
 
 import dynamic from "next/dynamic";
 
-const MapClient = dynamic(() => import("@/components/MapClient"), {
+const MapGate = dynamic(() => import("@/components/MapGate").then((module) => module.MapGate), {
   ssr: false,
   loading: () => <div className="h-[72vh] rounded-md border border-stone-200 bg-white" />
 });
 
 export function MapShell() {
-  return <MapClient />;
+  return <MapGate />;
 }

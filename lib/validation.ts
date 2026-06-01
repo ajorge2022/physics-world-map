@@ -18,7 +18,7 @@ export const profileInputSchema = z.object({
     z
       .string()
       .trim()
-      .regex(/^(\d{4}-){3}\d{3}[\dX]$/i, "Use the ORCID format 0000-0000-0000-0000.")
+      .regex(/^(\d{4}-){3}\d{3}[\dX]$/i, "Usa el formato ORCID 0000-0000-0000-0000.")
       .optional()
   ),
   linkedin: z.preprocess(emptyToUndefined, z.string().trim().url().max(300).optional()),
@@ -28,7 +28,7 @@ export const profileInputSchema = z.object({
   ),
   latitude: z.preprocess(emptyToUndefined, z.coerce.number().min(-90).max(90).optional()),
   longitude: z.preprocess(emptyToUndefined, z.coerce.number().min(-180).max(180).optional()),
-  consent_given: z.coerce.boolean().refine(Boolean, "Consent is required.")
+  consent_given: z.coerce.boolean().refine(Boolean, "El consentimiento es obligatorio.")
 });
 
 export const editLookupSchema = z.object({

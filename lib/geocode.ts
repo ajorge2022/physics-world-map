@@ -12,7 +12,7 @@ export async function geocodeCityCountry(city: string, country: string): Promise
 
   const response = await fetch(url, {
     headers: {
-      "User-Agent": "PhysicsWorldMap/0.1 admin-contact@example.edu"
+      "User-Agent": "UHPhysicsMap/0.1 admin-contact@example.edu"
     },
     next: { revalidate: 60 * 60 * 24 * 14 }
   });
