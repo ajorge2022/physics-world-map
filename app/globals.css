@@ -1,0 +1,73 @@
+@import "leaflet/dist/leaflet.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #17202a;
+  background: #f7f5ef;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(85, 115, 90, 0.12), transparent 28rem),
+    linear-gradient(180deg, #fbfaf6 0%, #f1eee5 100%);
+}
+
+a {
+  color: inherit;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  font: inherit;
+}
+
+.physics-pin {
+  align-items: center;
+  background: #a15f34;
+  border: 3px solid #fffdf7;
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 12px 24px rgba(23, 32, 42, 0.25);
+  display: flex;
+  height: 26px;
+  justify-content: center;
+  transform: rotate(-45deg);
+  width: 26px;
+}
+
+.physics-pin::after {
+  background: #fffdf7;
+  border-radius: 999px;
+  content: "";
+  display: block;
+  height: 7px;
+  width: 7px;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+}
+
+.field-label {
+  @apply text-sm font-medium text-ink;
+}
+
+.input {
+  @apply mt-1 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-ink shadow-sm outline-none transition focus:border-marine focus:ring-2 focus:ring-marine/20;
+}
+
+.button-primary {
+  @apply inline-flex items-center justify-center rounded-md bg-marine px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-marine/90 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.button-secondary {
+  @apply inline-flex items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.button-danger {
+  @apply inline-flex items-center justify-center rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50;
+}
