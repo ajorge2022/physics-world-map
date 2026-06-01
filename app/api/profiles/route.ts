@@ -106,7 +106,7 @@ export async function POST(request: Request) {
       latitude: finalLatitude,
       longitude: finalLongitude,
       edit_code_hash: editCodeHash,
-      is_approved: false,
+      is_approved: true,
       is_public: true
     });
 
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
       latitude: finalLatitude,
       longitude: finalLongitude,
       edit_code_hash: editCodeHash,
-      is_approved: false,
+      is_approved: true,
       is_public: true
     })
     .select("id")

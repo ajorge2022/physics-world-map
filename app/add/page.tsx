@@ -27,7 +27,7 @@ export default function AddPage() {
     <main className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
       <h1 className="text-3xl font-semibold text-ink">Agregar mi ubicacion</h1>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-700">
-        Envia solo informacion a nivel de ciudad. Los perfiles nuevos quedan ocultos hasta que un administrador los apruebe.
+        Envia solo informacion a nivel de ciudad. El pin se publica automaticamente al enviar el formulario.
       </p>
 
       {!unlocked ? (

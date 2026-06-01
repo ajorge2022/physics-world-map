@@ -187,7 +187,7 @@ export function ProfileForm({ mode, initialProfile, editCode, accessPassword }: 
 
     if (mode === "create") {
       setShownEditCode(result.editCode);
-      setMessage("Perfil enviado para aprobacion administrativa.");
+      setMessage("Perfil agregado y visible en el mapa.");
       form.reset();
       setCountryCode("");
       setCountryName("");
