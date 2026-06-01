@@ -67,11 +67,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
+  const countryCode = typeof body.country_code === "string" ? body.country_code : undefined;
+  const currentCity = parsed.data.current_city ?? "";
   let latitude = parsed.data.latitude;
   let longitude = parsed.data.longitude;
 
   if (latitude === undefined || longitude === undefined) {
-    const coordinates = await geocodeCityCountry(parsed.data.current_city, parsed.data.country);
+    const coordinates = await geocodeCityCountry(currentCity, parsed.data.country, countryCode);
     if (!coordinates) {
       return NextResponse.json(
         { error: "No se pudo geocodificar. Ingresa latitud y longitud a nivel de ciudad.", needsManualCoordinates: true },
@@ -91,6 +93,7 @@ export async function POST(request: Request) {
   if (!hasSupabaseConfig()) {
     const profile = await createLocalProfile({
       ...parsed.data,
+      current_city: currentCity,
       university_origin: parsed.data.university_origin ?? null,
       current_institution: parsed.data.current_institution ?? null,
       position: parsed.data.position ?? null,
@@ -115,6 +118,7 @@ export async function POST(request: Request) {
     .from("physicists")
     .insert({
       ...parsed.data,
+      current_city: currentCity,
       latitude: finalLatitude,
       longitude: finalLongitude,
       edit_code_hash: editCodeHash,
@@ -142,6 +146,26 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
+  const countryCode = typeof body.country_code === "string" ? body.country_code : undefined;
+  const currentCity = parsed.data.current_city ?? "";
+  let latitude = parsed.data.latitude;
+  let longitude = parsed.data.longitude;
+
+  if (latitude === undefined || longitude === undefined) {
+    const coordinates = await geocodeCityCountry(currentCity, parsed.data.country, countryCode);
+    if (!coordinates) {
+      return NextResponse.json(
+        { error: "No se pudo geocodificar. Ingresa latitud y longitud a nivel de ciudad.", needsManualCoordinates: true },
+        { status: 422 }
+      );
+    }
+    latitude = coordinates.latitude;
+    longitude = coordinates.longitude;
+  }
+
+  const finalLatitude = latitude;
+  const finalLongitude = longitude;
+
   if (!hasSupabaseConfig()) {
     const profiles = await listLocalProfiles();
     const existing = profiles.find((profile) => profile.id === parsed.data.id);
@@ -156,7 +180,13 @@ export async function PUT(request: Request) {
     }
 
     const { id, edit_code: _editCode, ...update } = parsed.data;
-    await updateLocalProfile(id, { ...update, is_approved: false });
+    await updateLocalProfile(id, {
+      ...update,
+      current_city: currentCity,
+      latitude: finalLatitude,
+      longitude: finalLongitude,
+      is_approved: false
+    });
 
     return NextResponse.json({ ok: true });
   }
@@ -180,7 +210,14 @@ export async function PUT(request: Request) {
   const { id, edit_code: _editCode, ...update } = parsed.data;
   const { error } = await supabase
     .from("physicists")
-    .update({ ...update, is_approved: false, updated_at: new Date().toISOString() })
+    .update({
+      ...update,
+      current_city: currentCity,
+      latitude: finalLatitude,
+      longitude: finalLongitude,
+      is_approved: false,
+      updated_at: new Date().toISOString()
+    })
     .eq("id", id);
 
   if (error) {

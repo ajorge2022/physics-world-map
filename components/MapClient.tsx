@@ -106,9 +106,7 @@ export default function MapClient({ accessPassword }: { accessPassword: string }
                 <Popup>
                   <div className="space-y-1 text-sm">
                     <h3 className="text-base font-semibold text-ink">{profile.name}</h3>
-                    <p>
-                      {profile.current_city}, {profile.country}
-                    </p>
+                    <p>{profile.current_city ? `${profile.current_city}, ${profile.country}` : profile.country}</p>
                     {profile.current_institution && <p>{profile.current_institution}</p>}
                     {profile.position && <p>{profile.position}</p>}
                     {profile.research_field && <p>{profile.research_field}</p>}

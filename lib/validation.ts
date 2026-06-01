@@ -5,7 +5,7 @@ const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
 export const profileInputSchema = z.object({
   name: z.string().trim().min(2).max(160),
   university_origin: z.preprocess(emptyToUndefined, z.string().trim().max(200).optional()),
-  current_city: z.string().trim().min(2).max(160),
+  current_city: z.preprocess(emptyToUndefined, z.string().trim().max(160).optional()),
   country: z.string().trim().min(2).max(160),
   current_institution: z.preprocess(emptyToUndefined, z.string().trim().max(220).optional()),
   position: z.preprocess(emptyToUndefined, z.string().trim().max(160).optional()),
